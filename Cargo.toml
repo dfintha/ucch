@@ -1,0 +1,9 @@
+[package]
+name = "ucch"
+version = "0.1.0"
+authors = ["Dénes Fintha <denes.fintha@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+magick_rust = "1.0.0"
+clap = { version = "4.4.2", features = ["derive", "usage", "suggestions"] }
