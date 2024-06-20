@@ -120,6 +120,10 @@ pub(crate) fn filter(wand: &mut MagickWand, tolerance: f64) -> Result<()> {
     }
 
     println!("(filter) Attempting to flood-fill and remove background.");
+
+    // Fuzz is computed as the root mean squared difference between two colors.
+    // As such, fuzz in percent is 100 * fuzz / UINT16_MAX, and one percent
+    // of tolerance is 0.01 * UINT16_MAX.
     let fuzz = tolerance * (0.01 * 65535f64);
     wand.set_first_iterator();
     filter_frame(wand, fuzz)?;
