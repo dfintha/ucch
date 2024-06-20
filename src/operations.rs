@@ -1,4 +1,4 @@
-use crate::result::{UcchError, Result};
+use crate::result::{Result, UcchError};
 use magick_rust::bindings::MagickFloodfillPaintImage;
 use magick_rust::{FilterType, MagickError, MagickWand, PixelWand};
 
@@ -18,27 +18,64 @@ pub(crate) fn convert(wand: &mut MagickWand) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn squarify(wand: &mut MagickWand) -> Result<()> {
-    let width = wand.get_image_width();
-    let height = wand.get_image_height();
-    if width == height {
+pub(crate) fn squarify(
+    wand: &mut MagickWand,
+    x: Option<isize>,
+    y: Option<isize>,
+    size: Option<isize>,
+) -> Result<()> {
+    let any = x.is_some() || y.is_some() || size.is_some();
+    let all = x.is_some() && y.is_some() && size.is_some();
+    if any && !all {
+        let message = String::from(
+            "If either the X or Y coordinate is or the size specified for the \
+            crop operation, all of them need to be present.",
+        );
+        return Err(UcchError::InvalidArgument(message));
+    }
+
+    let width = wand.get_image_width() as isize;
+    let height = wand.get_image_height() as isize;
+    if width == height && !any {
         println!("(squarify) Image is a square, skipping squarification.");
     } else {
         let smaller = std::cmp::min(width, height);
-        let x_offset = ((width - smaller) / 2) as isize;
-        let y_offset = ((height - smaller) / 2) as isize;
-        let repage = format!("{}x{}+{}+{}", smaller, smaller, 0, 0);
+        let size = if let Some(size) = size { size } else { smaller };
+
+        let x_offset = if let Some(x) = x {
+            x
+        } else {
+            (width - size) / 2
+        };
+
+        let y_offset = if let Some(y) = y {
+            y
+        } else {
+            (height - size) / 2
+        };
+
+        let x_big = size > (width - x_offset);
+        let y_big = size > (height - y_offset);
+        if x_big || y_big {
+            let message = String::from(
+                "Invalid crop size, cropping would go outside the boundary of \
+                the image.",
+            );
+            return Err(UcchError::InvalidArgument(message));
+        }
+
+        let repage = format!("{}x{}+{}+{}", size, size, 0, 0);
 
         println!(
             "(squarify) Squarifying image to {}x{} resolution.",
-            smaller, smaller
+            size, size
         );
 
         wand.set_first_iterator();
-        wand.crop_image(smaller, smaller, x_offset, y_offset)?;
+        wand.crop_image(size as usize, size as usize, x_offset, y_offset)?;
         wand.reset_image_page(&repage)?;
         while wand.next_image() {
-            wand.crop_image(smaller, smaller, x_offset, y_offset)?;
+            wand.crop_image(size as usize, size as usize, x_offset, y_offset)?;
             wand.reset_image_page(&repage)?;
         }
     }

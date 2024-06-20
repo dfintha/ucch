@@ -10,13 +10,21 @@ ultimately decided by the file name extension of the output file.
 ## Usage
 
 ```
-$ ucch [--tolerance TOLERANCE_PERCENT] <INPUT_PATH> <OUTPUT_PATH>
+$ ucch \
+    [--tolerance PERCENT] \
+    [--crop-x X --crop-y Y --crop-size SIZE] \
+    <INPUT_PATH> \
+    <OUTPUT_PATH>
 ```
 
 If a tolerance percentage is given by the user, `ucch` attempts to flood-fill
 the background of the image with a transparent color, starting from the top-left
 pixel, with the tolerance percentage set by the user. Otherwise, the background
 of the image will be kept intact.
+
+If any of the cropping-related parameters are specified, all of them need to be
+specified. These flags enable the user to perform a custom (but always square)
+cropping of the image.
 
 ## License
 
