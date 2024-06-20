@@ -6,7 +6,11 @@ mod operations;
 mod result;
 
 #[derive(Debug, Parser)]
-#[command(version, about, long_about = None)]
+#[command(name = "ucch", version, about, long_about = None)]
+#[command(about = "Image to Slack emoji converter")]
+#[command(
+    after_help = "All crop settings shall be given at once, or the squarify operation will fail."
+)]
 struct CommandLineArguments {
     /// Path of the input file
     #[arg()]
