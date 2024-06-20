@@ -46,7 +46,7 @@ fn main() -> Result<()> {
         let mut wand = MagickWand::new();
         wand.read_image_blob(blob)?;
         println!("(input) Original image read from '{}'.", &arguments.input);
-        operations::convert(&mut wand)?;
+        operations::convert(&mut wand, arguments.tolerance)?;
         operations::squarify(&mut wand, crop_x, crop_y, crop_size)?;
         operations::filter(&mut wand, arguments.tolerance)?;
         operations::downscale(&mut wand)?;

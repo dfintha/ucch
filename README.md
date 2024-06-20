@@ -3,9 +3,10 @@
 `ucch` is a very simple tool using the MagickWand library of ImageMagick that
 transforms images into a form that can be used as a Slack emoji.
 
-It supports all the image formats that ImageMagick does; every non-GIF image is
-converted to PNG format after loading them, but the output file format is
-ultimately decided by the file name extension of the output file.
+It supports all the image formats that ImageMagick does. Every non-GIF image is
+converted to PNG format if no background erasure will be done to them after
+loading, but the output file format is ultimately decided by the file name
+extension of the output file.
 
 ## Usage
 

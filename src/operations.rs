@@ -7,9 +7,14 @@ fn sizeof(wand: &MagickWand) -> Result<usize> {
     Ok(blob.len())
 }
 
-pub(crate) fn convert(wand: &mut MagickWand) -> Result<()> {
+pub(crate) fn convert(wand: &mut MagickWand, tolerance: f64) -> Result<()> {
     let format = wand.get_image_format()?;
-    if format != "GIF" {
+    if format != "GIF" && tolerance == 0f64 {
+        println!(
+            "(convert) Image format is not GIF and no background erasure will \
+            be done, skipping conversion."
+        );
+    } else if format != "GIF" {
         println!("(convert) Image format is not GIF, converting to PNG.");
         wand.set_image_format("PNG")?;
     } else {
