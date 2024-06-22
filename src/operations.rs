@@ -2,14 +2,22 @@ use crate::result::{Result, UcchError};
 use magick_rust::bindings::MagickFloodfillPaintImage;
 use magick_rust::{FilterType, MagickError, MagickWand, PixelWand};
 
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct OperationOptions {
+    pub tolerance: f64,
+    pub crop_x: Option<isize>,
+    pub crop_y: Option<isize>,
+    pub crop_size: Option<isize>,
+}
+
 fn sizeof(wand: &MagickWand) -> Result<usize> {
     let blob = wand.write_images_blob(&wand.get_image_format()?)?;
     Ok(blob.len())
 }
 
-pub(crate) fn convert(wand: &mut MagickWand, tolerance: f64) -> Result<()> {
+pub(crate) fn convert(wand: &mut MagickWand, options: &OperationOptions) -> Result<()> {
     let format = wand.get_image_format()?;
-    if format != "GIF" && tolerance == 0f64 {
+    if format != "GIF" && options.tolerance == 0f64 {
         println!(
             "(convert) Image format is not GIF and no background erasure will \
             be done, skipping conversion."
@@ -23,12 +31,11 @@ pub(crate) fn convert(wand: &mut MagickWand, tolerance: f64) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn squarify(
-    wand: &mut MagickWand,
-    x: Option<isize>,
-    y: Option<isize>,
-    size: Option<isize>,
-) -> Result<()> {
+pub(crate) fn squarify(wand: &mut MagickWand, options: &OperationOptions) -> Result<()> {
+    let x = options.crop_x;
+    let y = options.crop_y;
+    let size = options.crop_size;
+
     let any = x.is_some() || y.is_some() || size.is_some();
     let all = x.is_some() && y.is_some() && size.is_some();
     if any && !all {
@@ -113,8 +120,8 @@ pub(crate) fn filter_frame(wand: &mut MagickWand, fuzz: f64) -> Result<()> {
     }
 }
 
-pub(crate) fn filter(wand: &mut MagickWand, tolerance: f64) -> Result<()> {
-    if tolerance == 0f64 {
+pub(crate) fn filter(wand: &mut MagickWand, options: &OperationOptions) -> Result<()> {
+    if options.tolerance == 0f64 {
         println!("(filter) Zero or no tolerance specified, skipping background removal.");
         return Ok(());
     }
@@ -124,11 +131,11 @@ pub(crate) fn filter(wand: &mut MagickWand, tolerance: f64) -> Result<()> {
     // Fuzz is computed as the root mean squared difference between two colors.
     // As such, fuzz in percent is 100 * fuzz / UINT16_MAX, and one percent
     // of tolerance is 0.01 * UINT16_MAX.
-    let fuzz = tolerance * (0.01 * 65535f64);
+    let fuzz = options.tolerance * (0.01 * 65535f64);
     wand.set_first_iterator();
     filter_frame(wand, fuzz)?;
     while wand.next_image() {
-        filter_frame(wand, tolerance)?;
+        filter_frame(wand, fuzz)?;
     }
 
     Ok(())

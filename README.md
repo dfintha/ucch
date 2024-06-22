@@ -12,6 +12,7 @@ extension of the output file.
 
 ```
 $ ucch \
+    [--interactive] \
     [--tolerance PERCENT] \
     [--crop-x X --crop-y Y --crop-size SIZE] \
     <INPUT_PATH> \
@@ -26,6 +27,9 @@ of the image will be kept intact.
 If any of the cropping-related parameters are specified, all of them need to be
 specified. These flags enable the user to perform a custom (but always square)
 cropping of the image.
+
+In interactive mode, cropping parameters and the background erasure tolerance
+are set from a GUI, which provides a live preview for the cropping.
 
 ## License
 

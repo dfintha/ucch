@@ -1,7 +1,10 @@
+use crate::interactive::perform_interactive_setup;
+use crate::operations::OperationOptions;
 use crate::result::{print_error, Result};
 use clap::Parser;
 use magick_rust::{magick_wand_genesis, magick_wand_terminus, MagickWand};
 
+mod interactive;
 mod operations;
 mod result;
 
@@ -35,6 +38,10 @@ struct CommandLineArguments {
     /// Size of the cropped area
     #[arg(long, value_name = "SIZE")]
     crop_size: Option<isize>,
+
+    /// When set, cropping and background erasure is performed through a GUI
+    #[arg(long, default_value_t = false)]
+    interactive: bool,
 }
 
 fn main() -> Result<()> {
@@ -42,17 +49,25 @@ fn main() -> Result<()> {
 
     magick_wand_genesis();
 
+    let options = if arguments.interactive {
+        perform_interactive_setup(&arguments.input)?
+    } else {
+        OperationOptions {
+            tolerance: arguments.tolerance,
+            crop_x: arguments.crop_x,
+            crop_y: arguments.crop_y,
+            crop_size: arguments.crop_size,
+        }
+    };
+
     let result: Result<()> = {
-        let crop_x = arguments.crop_x;
-        let crop_y = arguments.crop_y;
-        let crop_size = arguments.crop_size;
-        let blob = std::fs::read(&arguments.input)?;
         let mut wand = MagickWand::new();
+        let blob = std::fs::read(&arguments.input)?;
         wand.read_image_blob(blob)?;
         println!("(input) Original image read from '{}'.", &arguments.input);
-        operations::convert(&mut wand, arguments.tolerance)?;
-        operations::squarify(&mut wand, crop_x, crop_y, crop_size)?;
-        operations::filter(&mut wand, arguments.tolerance)?;
+        operations::convert(&mut wand, &options)?;
+        operations::squarify(&mut wand, &options)?;
+        operations::filter(&mut wand, &options)?;
         operations::downscale(&mut wand)?;
         wand.write_images(&arguments.output, true)?;
         println!("(output) Final image written to '{}'.", &arguments.output);

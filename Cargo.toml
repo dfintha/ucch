@@ -5,5 +5,7 @@ authors = ["Dénes Fintha <denes.fintha@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-magick_rust = "1.0.0"
 clap = { version = "4.4.2", features = ["derive", "usage", "suggestions"] }
+gtk4 = "0.8.2"
+lazy_static = "1.4.0"
+magick_rust = "1.0.0"
