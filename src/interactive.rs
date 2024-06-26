@@ -9,7 +9,6 @@ use gtk4::{
     Scale,
 };
 use lazy_static::lazy_static;
-use magick_rust::MagickWand;
 use std::sync::Mutex;
 
 lazy_static! {
@@ -27,11 +26,6 @@ pub(crate) fn perform_interactive_setup(file: &str) -> Result<OperationOptions> 
         .build();
 
     let file = String::from(file);
-
-    let wand = MagickWand::new();
-    let blob = std::fs::read(&file)?;
-    wand.read_image_blob(blob)?;
-
     application.connect_activate(move |application| {
         let provider = CssProvider::new();
         provider.load_from_data(
@@ -55,8 +49,8 @@ pub(crate) fn perform_interactive_setup(file: &str) -> Result<OperationOptions> 
         let preview = Image::from_pixbuf(Some(&pixbuf));
         preview.set_css_classes(&["black_bg"]);
 
-        let width = wand.get_image_width();
-        let height = wand.get_image_height();
+        let width = pixbuf.width();
+        let height = pixbuf.height();
         let smaller = std::cmp::min(height, width);
 
         let crop_x_adjustment = Adjustment::builder()
