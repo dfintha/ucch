@@ -7,5 +7,6 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.4.2", features = ["derive", "usage", "suggestions"] }
 gtk4 = "0.8.2"
+glib = "0.20.0"
 lazy_static = "1.4.0"
 magick_rust = "1.0.0"
